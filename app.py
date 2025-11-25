@@ -225,7 +225,9 @@ def get_all_documents():
         return jsonify({'error': str(e)}), 500
 
 
+# Initialize database on startup (before gunicorn starts)
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     port = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=port, debug=False)
