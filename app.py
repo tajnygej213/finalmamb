@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import psycopg
-from psycopg.extras import RealDictCursor
+from psycopg.rows import dict_row
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -71,7 +71,7 @@ def create_user():
     
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor(row_factory=dict_row)
         
         # Create user with access enabled by default
         cur.execute('INSERT INTO users (username, password, has_access) VALUES (%s, %s, %s)', 
@@ -80,7 +80,7 @@ def create_user():
         cur.close()
         conn.close()
         return jsonify({'message': 'User created successfully'}), 201
-    except psycopg2.IntegrityError:
+    except psycopg.IntegrityError:
         return jsonify({'error': 'Username already exists'}), 409
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -93,7 +93,7 @@ def login():
     
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor(row_factory=dict_row)
         cur.execute('SELECT * FROM users WHERE username = %s', (username,))
         user = cur.fetchone()
         cur.close()
@@ -132,7 +132,7 @@ def save_document():
 def get_users():
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor(row_factory=dict_row)
         
         cur.execute('SELECT id, username, has_access, created_at FROM users ORDER BY created_at DESC')
         users = cur.fetchall()
@@ -149,7 +149,7 @@ def update_access(user_id):
     
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor(row_factory=dict_row)
         
         cur.execute('UPDATE users SET has_access = %s WHERE id = %s', (has_access, user_id))
         conn.commit()
@@ -163,7 +163,7 @@ def update_access(user_id):
 def get_all_documents():
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor(row_factory=dict_row)
         
         cur.execute('''
             SELECT d.id, u.username, d.name, d.surname, d.pesel, d.created_at
