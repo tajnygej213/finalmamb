@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 import psycopg
 from psycopg.rows import dict_row
@@ -11,6 +11,10 @@ load_dotenv()
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
+
+# Serve HTML files with correct MIME type
+def serve_html(filename):
+    return send_from_directory('.', filename, mimetype='text/html')
 
 
 # Database Connection
@@ -80,30 +84,30 @@ def init_db():
         traceback.print_exc()
 
 
-# Serve HTML files
+# Serve HTML files with correct MIME types
 @app.route('/')
 def index():
-    return send_file('admin-login.html')
+    return serve_html('admin-login.html')
 
 
 @app.route('/admin-login.html')
 def admin_login_page():
-    return send_file('admin-login.html')
+    return serve_html('admin-login.html')
 
 
 @app.route('/login.html')
 def login_page():
-    return send_file('login.html')
+    return serve_html('login.html')
 
 
 @app.route('/gen.html')
 def gen_page():
-    return send_file('gen.html')
+    return serve_html('gen.html')
 
 
 @app.route('/admin.html')
 def admin_page():
-    return send_file('admin.html')
+    return serve_html('admin.html')
 
 
 # Seed database with admin user
