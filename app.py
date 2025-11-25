@@ -12,6 +12,11 @@ load_dotenv()
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
+# Serve /assets/ folder
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return send_from_directory('assets', filename)
+
 # Serve HTML files with proper caching headers
 def serve_html(filename):
     try:
