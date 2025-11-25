@@ -115,7 +115,7 @@ def login():
         if not user['has_access']:
             return jsonify({'error': 'Access denied. Contact administrator'}), 403
         
-        access_token = create_access_token(identity=user['id'])
+        access_token = create_access_token(identity=str(user['id']))
         return jsonify({'access_token': access_token, 'username': user['username']}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
