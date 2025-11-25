@@ -12,10 +12,19 @@ load_dotenv()
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-# Serve /assets/ folder
+# Serve static files from /assets/ and root
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
     return send_from_directory('assets', filename)
+
+@app.route('/<filename>')
+def serve_root_file(filename):
+    """Serve files from root directory (favicon, etc)"""
+    if os.path.isfile(filename):
+        from mimetypes import guess_type
+        mimetype, _ = guess_type(filename)
+        return send_file(filename, mimetype=mimetype or 'text/plain')
+    return "Not found", 404
 
 # Serve HTML files with proper caching headers
 def serve_html(filename):
