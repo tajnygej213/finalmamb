@@ -14,14 +14,18 @@ CORS(app)
 
 # Serve HTML files with proper caching headers
 def serve_html(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
-        content = f.read()
-    from flask import Response
-    return Response(content, mimetype='text/html', headers={
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-    })
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            content = f.read()
+        from flask import Response
+        response = Response(content, mimetype='text/html; charset=utf-8')
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        return response
+    except Exception as e:
+        return jsonify({'error': f'Cannot load {filename}: {str(e)}'}), 500
 
 
 # Database Connection
