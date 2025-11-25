@@ -3,8 +3,8 @@ import os
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.extras import RealDictCursor
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,7 +14,7 @@ CORS(app)
 
 # Database Connection
 def get_db():
-    return psycopg2.connect(os.environ.get('DATABASE_URL'))
+    return psycopg.connect(os.environ.get('DATABASE_URL'))
 
 def init_db():
     """Initialize database with required tables"""
