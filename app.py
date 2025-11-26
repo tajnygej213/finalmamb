@@ -244,6 +244,60 @@ def save_document():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/documents/create-and-get-id', methods=['POST'])
+def create_document_with_id():
+    """Save document with full data and return only document ID for secure sharing"""
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({'error': 'user_id required'}), 400
+
+    try:
+        conn = get_db()
+        cur = conn.cursor(row_factory=dict_row)
+        
+        # Save all document data to database
+        import json
+        cur.execute(
+            '''
+            INSERT INTO generated_documents (user_id, name, surname, pesel, data)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        ''',
+            (user_id, data.get('name'), data.get('surname'), data.get('pesel'),
+             json.dumps(data)))
+        
+        result = cur.fetchone()
+        document_id = result['id'] if result else None
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'document_id': document_id}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/documents/<int:document_id>', methods=['GET'])
+def get_document(document_id):
+    """Retrieve document data by ID"""
+    try:
+        conn = get_db()
+        cur = conn.cursor(row_factory=dict_row)
+        cur.execute('SELECT data FROM generated_documents WHERE id = %s', (document_id,))
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if not result:
+            return jsonify({'error': 'Document not found'}), 404
+        
+        import json
+        document_data = json.loads(result['data']) if isinstance(result['data'], str) else result['data']
+        return jsonify(document_data), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/admin/users', methods=['GET'])
 def get_users():

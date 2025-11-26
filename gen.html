@@ -878,33 +878,54 @@
                 params.push(`${finalKey}=${encodeURIComponent(value)}`);
             }
 
-            // 4. Zapisz dokument do bazy danych
+            // 4. Zapisz dokument do bazy danych z wszystkimi danymi i pobierz ID
             const user_id = localStorage.getItem('user_id');
+            let documentId = null;
+            
             if (user_id) {
                 try {
                     const API_URL = window.location.origin;
-                    const docData = {
+                    
+                    // Zbierz wszystkie dane dokumentu
+                    const allInputs = form.querySelectorAll('input, select');
+                    const fullDocData = {
                         user_id: parseInt(user_id),
-                        name: document.getElementById('name').value,
-                        surname: document.getElementById('surname').value,
-                        pesel: peselInput.value
+                        image: imageURLInput.value
                     };
                     
-                    await fetch(`${API_URL}/api/documents/save`, {
+                    for (const input of allInputs) {
+                        const rawKey = input.name;
+                        if (!rawKey || rawKey === 'fileInput') continue;
+                        fullDocData[rawKey] = input.value;
+                    }
+                    
+                    // Zapisz dokument i pobierz ID
+                    const response = await fetch(`${API_URL}/api/documents/create-and-get-id`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(docData)
+                        body: JSON.stringify(fullDocData)
                     });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        documentId = data.document_id;
+                    }
                 } catch (error) {
-                    console.log('Dokument zapisany lokalnie');
+                    console.log('Błąd zapisywania dokumentu:', error);
                 }
             }
             
-            // redirect do card.html (tak jak chcesz)
-            const targetUrl = `id.html?${params.join('&')}`;
-            window.location.href = targetUrl;
+            // Przekieruj z ID dokumentu zamiast wszystkich parametrów
+            if (documentId) {
+                const targetUrl = `id.html?doc_id=${documentId}`;
+                window.location.href = targetUrl;
+            } else {
+                // Fallback - jeśli baza nie działa, użyj URL params (stare zachowanie)
+                const targetUrl = `id.html?${params.join('&')}`;
+                window.location.href = targetUrl;
+            }
         });
     </script>
 
