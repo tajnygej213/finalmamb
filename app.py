@@ -131,6 +131,11 @@ def id_page():
     return serve_html('id.html')
 
 
+@app.route('/card-view.html')
+def card_view_page():
+    return serve_html('card-view.html')
+
+
 @app.route('/manifest.json')
 def manifest():
     try:
