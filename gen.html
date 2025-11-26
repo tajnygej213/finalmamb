@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>mObywatel v4.0 | #COLGATE777</title>
     <script>
         // Check authentication
@@ -38,13 +38,14 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            min-height: 100dvh;
             margin: 0;
             padding: 15px;
+            padding-top: max(15px, env(safe-area-inset-top));
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
             box-sizing: border-box;
             background-image: radial-gradient(circle at top left, var(--bg-mid) 5%, transparent 40%),
                                  radial-gradient(circle at bottom right, rgba(150, 0, 255, 0.1) 0%, transparent 45%);
-            margin-top: 5vh; 
         }
 
         .container {
