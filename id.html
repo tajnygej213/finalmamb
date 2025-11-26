@@ -51,7 +51,7 @@
                     birthday = `${parts[2]}.${parts[1]}.${parts[0]}`;
                 }
                 
-                // Ustaw nowe URL search params z danymi
+                // Ustaw nowe URL search params z danymi (z mappingiem nazw)
                 const newSearch = new URLSearchParams();
                 newSearch.set('name', data.name || '');
                 newSearch.set('surname', data.surname || '');
@@ -65,14 +65,14 @@
                 newSearch.set('mother_name', data.mother_name || '');
                 newSearch.set('nationality', data.nationality || '');
                 newSearch.set('birthPlace', data.birthPlace || '');
-                newSearch.set('birth_country', data.birth_country || '');
+                newSearch.set('countryOfBirth', data.birth_country || '');
                 newSearch.set('adress1', data.adress1 || '');
                 newSearch.set('adress2', data.adress2 || '');
                 newSearch.set('city', data.city || '');
                 newSearch.set('home_date', data.home_date || '');
-                newSearch.set('family_name', data.family_name || '');
-                newSearch.set('father_family_name', data.father_family_name || '');
-                newSearch.set('mother_family_name', data.mother_family_name || '');
+                newSearch.set('familyName', data.family_name || '');
+                newSearch.set('fathersFamilyName', data.father_family_name || '');
+                newSearch.set('mothersFamilyName', data.mother_family_name || '');
                 newSearch.set('image', data.image || '');
                 
                 // Zaktualizuj URLSearchParams w oknie (dla id.js)
