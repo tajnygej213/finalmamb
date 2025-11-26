@@ -44,12 +44,19 @@
                 // Zapisz dane globalnie
                 window.documentData = data;
                 
+                // Konwertuj birthday z YYYY-MM-DD do DD.MM.YYYY jeśli potrzeba
+                let birthday = data.birthday || '';
+                if (birthday && birthday.includes('-')) {
+                    const parts = birthday.split('-');
+                    birthday = `${parts[2]}.${parts[1]}.${parts[0]}`;
+                }
+                
                 // Ustaw nowe URL search params z danymi
                 const newSearch = new URLSearchParams();
                 newSearch.set('name', data.name || '');
                 newSearch.set('surname', data.surname || '');
                 newSearch.set('sex', data.sex || '');
-                newSearch.set('birthday', data.birthday || '');
+                newSearch.set('birthday', birthday);
                 newSearch.set('pesel', data.pesel || '');
                 newSearch.set('mdow_series', data.mdow_series || '');
                 newSearch.set('issue_date', data.issue_date || '');
