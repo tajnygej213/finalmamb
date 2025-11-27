@@ -6,14 +6,14 @@
     <title>Admin Login - mObywatel</title>
     <style>
         :root {
-            --bg-dark: #09020e;
-            --bg-mid: #1c0a27;
+            --bg-dark: #0a0a0a;
+            --bg-mid: #1a1a1a;
             --text-light: #eeeeee;
             --text-subtle: #777777;
             --glass-fill: rgba(255, 255, 255, 0.05);
-            --border-clear: rgba(150, 0, 255, 0.3);
-            --accent-purple: #9c27b0;
-            --accent-glow: rgba(150, 0, 255, 0.6);
+            --border-clear: rgba(255, 255, 255, 0.1);
+            --accent-purple: #000000;
+            --accent-glow: rgba(0, 0, 0, 0.8);
         }
 
         * {
@@ -92,8 +92,8 @@
             width: 100%;
             padding: 12px;
             margin-top: 20px;
-            background: linear-gradient(135deg, var(--accent-purple) 0%, rgba(150, 0, 255, 0.7) 100%);
-            border: none;
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             color: white;
             font-weight: 700;
@@ -103,7 +103,9 @@
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px var(--accent-glow);
+            background: #2a2a2a;
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         .error {
