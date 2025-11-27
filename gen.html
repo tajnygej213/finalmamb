@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="mObywatel">
-    <meta name="theme-color" content="#09020e">
+    <meta name="theme-color" content="#0a0a0a">
     <link rel="manifest" href="/manifest.json">
     <title>mObywatel v4.0 | #COLGATE777</title>
     <script>
@@ -21,15 +21,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
-            --bg-dark: #09020e; 
-            --bg-mid: #1c0a27; 
+            --bg-dark: #0a0a0a; 
+            --bg-mid: #1a1a1a; 
             --text-light: #eeeeee;
             --text-subtle: #777777;
             --glass-fill: rgba(255, 255, 255, 0.05); 
-            --border-clear: rgba(150, 0, 255, 0.3); 
-            --accent-purple: #9c27b0; 
-            --accent-glow: rgba(150, 0, 255, 0.6);
-            --shadow-button: rgba(150, 0, 255, 0.4);
+            --border-clear: rgba(255, 255, 255, 0.1); 
+            --accent-purple: #000000; 
+            --accent-glow: rgba(0, 0, 0, 0.8);
+            --shadow-button: rgba(0, 0, 0, 0.6);
             --error-red: #ff3333; 
             --success-green: #33ff33; 
             --accent-blue: #3366ff; /* Akcent dla przycisku generowania dat */
@@ -50,9 +50,15 @@
             padding: 0;
             box-sizing: border-box;
             background-image: radial-gradient(circle at top left, var(--bg-mid) 5%, transparent 40%),
-                                 radial-gradient(circle at bottom right, rgba(150, 0, 255, 0.1) 0%, transparent 45%);
+                                 radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.2) 0%, transparent 45%);
             overflow: hidden;
             position: relative;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        body::-webkit-scrollbar {
+            display: none;
         }
 
         .container {
@@ -71,6 +77,12 @@
             max-height: 90dvh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .container::-webkit-scrollbar {
+            display: none;
         }
 
         h1 {
@@ -103,7 +115,7 @@
         /* AKCENT MROCZNEGO GLOW PRZY FOCUSIE */
         .form-group:focus-within {
             transform: translateY(-2px);
-            background-color: rgba(150, 0, 255, 0.05);
+            background-color: rgba(0, 0, 0, 0.05);
             border-radius: 12px;
         }
         
@@ -189,7 +201,7 @@
 
 
         /* Styl dla głównego przycisku generowania */
-        #generateButton {
+#generateButton {
             width: 100%;
             padding: 18px 20px;
             border: none;
@@ -203,7 +215,7 @@
             
             background-color: var(--accent-purple);
             color: var(--text-light);
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
             box-shadow: 0 4px 20px var(--shadow-button);
         }
 
@@ -258,7 +270,7 @@
         .custom-file-upload { 
             display: block; width: 100%; padding: 16px 14px; border: 1px solid var(--border-clear); border-radius: 12px; box-sizing: border-box; background-color: rgba(0, 0, 0, 0.5); color: var(--text-subtle); cursor: pointer; text-align: center; transition: all 0.3s; font-size: 1rem; font-weight: 500;
         }
-        .custom-file-upload:hover { border-color: var(--accent-purple); box-shadow: 0 0 0 4px rgba(150, 0, 255, 0.2); }
+        .custom-file-upload:hover { border-color: var(--accent-purple); box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.2); }
         .image-preview-container { width: 100%; height: 0; opacity: 0; border: 1px dashed transparent; border-radius: 12px; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-top: 0; cursor: pointer; transition: all 0.3s ease-in-out; }
         .image-preview-container.active { height: 120px; opacity: 1; margin-top: 5px; border: 1px dashed var(--border-clear); }
         #imagePreview { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; display: block; }
@@ -297,15 +309,15 @@
         .instruction-details summary:hover {
             /* Mocniejsze podświetlenie i delikatny ruch przy najechaniu */
             transform: translateY(-2px);
-            box-shadow: 0 0 25px var(--accent-glow), 0 0 5px var(--text-light);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5), 0 0 5px rgba(255, 255, 255, 0.3);
         }
         
         /* Styl dla otwartej sekcji (po kliknięciu) */
         .instruction-details[open] summary {
-            background-color: #6a1b9a; /* Lekko ciemniejszy akcent po otwarciu */
+            background-color: #1a1a1a; /* Lekko ciemniejszy akcent po otwarciu */
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
-            box-shadow: 0 0 5px var(--accent-glow);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
 
         .instruction-details .icon {
