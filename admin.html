@@ -103,6 +103,76 @@
             background: #ff3333;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--bg-dark);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid rgba(150, 0, 255, 0.3);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent-purple);
+        }
+
+        .modal-body input, .modal-body select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(150, 0, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #eee;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-footer button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .modal-footer button.save {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .modal-footer button.cancel {
+            background: rgba(150, 0, 255, 0.2);
+            color: #eee;
+        }
+
         .logout {
             position: fixed;
             top: 20px;
@@ -177,10 +247,36 @@
                         <th>Nazwisko</th>
                         <th>PESEL</th>
                         <th>Data</th>
+                        <th>Akcja</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Edytuj dokument</div>
+            <div class="modal-body">
+                <input type="hidden" id="editDocId">
+                <div>
+                    <label style="color: #777; display: block; margin-bottom: 5px;">Imię</label>
+                    <input type="text" id="editName" placeholder="Imię">
+                </div>
+                <div>
+                    <label style="color: #777; display: block; margin-bottom: 5px;">Nazwisko</label>
+                    <input type="text" id="editSurname" placeholder="Nazwisko">
+                </div>
+                <div>
+                    <label style="color: #777; display: block; margin-bottom: 5px;">PESEL</label>
+                    <input type="text" id="editPesel" placeholder="PESEL">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" onclick="closeEditModal()">Anuluj</button>
+                <button class="save" onclick="saveDocumentEdit()">Zapisz</button>
+            </div>
         </div>
     </div>
 
@@ -280,8 +376,70 @@
                         <td>${d.surname}</td>
                         <td>${d.pesel}</td>
                         <td>${new Date(d.created_at).toLocaleDateString('pl-PL')}</td>
+                        <td>
+                            <button class="action" onclick="editDocument(${d.id}, '${d.name}', '${d.surname}', '${d.pesel}')">Edytuj</button>
+                            <button class="action revoke" onclick="deleteDocument(${d.id})">Usuń</button>
+                        </td>
                     </tr>
                 `).join('');
+            } catch (error) {
+                alert('Błąd: ' + error.message);
+            }
+        }
+
+        function editDocument(docId, name, surname, pesel) {
+            document.getElementById('editDocId').value = docId;
+            document.getElementById('editName').value = name;
+            document.getElementById('editSurname').value = surname;
+            document.getElementById('editPesel').value = pesel;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        async function saveDocumentEdit() {
+            const docId = document.getElementById('editDocId').value;
+            const name = document.getElementById('editName').value;
+            const surname = document.getElementById('editSurname').value;
+            const pesel = document.getElementById('editPesel').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/admin/documents/${docId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, surname, pesel })
+                });
+
+                if (response.ok) {
+                    closeEditModal();
+                    loadDocuments();
+                    alert('Dokument został zaktualizowany pomyślnie');
+                } else {
+                    alert('Błąd podczas aktualizacji dokumentu');
+                }
+            } catch (error) {
+                alert('Błąd: ' + error.message);
+            }
+        }
+
+        async function deleteDocument(documentId) {
+            if (!confirm('Czy na pewno chcesz usunąć ten dokument?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/admin/documents/${documentId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadDocuments();
+                    alert('Dokument został usunięty pomyślnie');
+                } else {
+                    alert('Błąd podczas usuwania dokumentu');
+                }
             } catch (error) {
                 alert('Błąd: ' + error.message);
             }
