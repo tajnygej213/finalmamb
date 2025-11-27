@@ -361,6 +361,7 @@ def update_document(document_id):
     name = data.get('name')
     surname = data.get('surname')
     pesel = data.get('pesel')
+    image = data.get('image')
     
     try:
         conn = get_db()
@@ -379,6 +380,8 @@ def update_document(document_id):
         doc_data['name'] = name
         doc_data['surname'] = surname
         doc_data['pesel'] = pesel
+        if image:
+            doc_data['image'] = image
         
         cur.execute('UPDATE generated_documents SET name = %s, surname = %s, pesel = %s, data = %s WHERE id = %s',
                     (name, surname, pesel, json.dumps(doc_data), document_id))
