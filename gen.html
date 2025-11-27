@@ -905,7 +905,14 @@
                         const rawKey = input.name;
                         if (!rawKey || rawKey === 'fileInput') continue;
                         const finalKey = nameMap[rawKey] || rawKey;
-                        fullDocData[finalKey] = input.value;
+                        let value = input.value;
+                        
+                        // Convert birthday from YYYY-MM-DD to DD.MM.YYYY for storage
+                        if (rawKey === 'birthday' && value) {
+                            value = formatDateForURL(value);
+                        }
+                        
+                        fullDocData[finalKey] = value;
                     }
                     
                     // Zapisz dokument i pobierz ID
