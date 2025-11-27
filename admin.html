@@ -6,9 +6,9 @@
     <title>Admin Panel - mObywatel</title>
     <style>
         :root {
-            --bg-dark: #09020e;
+            --bg-dark: #0a0a0a;
             --text-light: #eeeeee;
-            --accent-purple: #9c27b0;
+            --accent-purple: #000000;
         }
 
         * {
@@ -39,7 +39,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
-            border-bottom: 2px solid rgba(150, 0, 255, 0.3);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         button.tab {
@@ -77,11 +77,11 @@
         th, td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid rgba(150, 0, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         th {
-            background: rgba(150, 0, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
             font-weight: 700;
         }
 
@@ -124,7 +124,7 @@
             background: var(--bg-dark);
             padding: 30px;
             border-radius: 8px;
-            border: 1px solid rgba(150, 0, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             width: 90%;
             max-width: 500px;
             max-height: 80vh;
@@ -142,7 +142,7 @@
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
-            border: 1px solid rgba(150, 0, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 5px;
             background: rgba(0, 0, 0, 0.3);
             color: #eee;
@@ -169,7 +169,7 @@
         }
 
         .modal-footer button.cancel {
-            background: rgba(150, 0, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             color: #eee;
         }
 
@@ -225,11 +225,11 @@
             <form id="createUserForm" style="max-width: 400px;">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label for="newUsername" style="display: block; margin-bottom: 5px; color: #777;">Nazwa użytkownika:</label>
-                    <input type="text" id="newUsername" placeholder="np. john_doe" required style="width: 100%; padding: 10px; border: 1px solid rgba(150, 0, 255, 0.3); border-radius: 5px; background: rgba(0,0,0,0.3); color: #eee;">
+                    <input type="text" id="newUsername" placeholder="np. john_doe" required style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; background: rgba(0,0,0,0.3); color: #eee;">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label for="newPassword" style="display: block; margin-bottom: 5px; color: #777;">Hasło:</label>
-                    <input type="text" id="newPassword" placeholder="np. SecurePass123" required style="width: 100%; padding: 10px; border: 1px solid rgba(150, 0, 255, 0.3); border-radius: 5px; background: rgba(0,0,0,0.3); color: #eee;">
+                    <input type="text" id="newPassword" placeholder="np. SecurePass123" required style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; background: rgba(0,0,0,0.3); color: #eee;">
                 </div>
                 <button type="submit" style="width: 100%; padding: 10px; background: #9c27b0; border: none; border-radius: 5px; color: white; font-weight: 600; cursor: pointer;">Stwórz konto</button>
                 <div id="createMessage" style="margin-top: 15px; text-align: center;"></div>
@@ -274,9 +274,9 @@
                 </div>
                 <div>
                     <label style="color: #777; display: block; margin-bottom: 5px;">Zdjęcie</label>
-                    <input type="file" id="editImageFile" accept="image/*" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid rgba(150, 0, 255, 0.3); border-radius: 5px; background: rgba(0, 0, 0, 0.3); color: #eee;">
+                    <input type="file" id="editImageFile" accept="image/*" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; background: rgba(0, 0, 0, 0.3); color: #eee;">
                     <input type="hidden" id="editImageURL">
-                    <div id="editImagePreview" style="width: 100%; height: 120px; margin-bottom: 15px; border: 1px dashed rgba(150, 0, 255, 0.3); border-radius: 5px; display: none; align-items: center; justify-content: center;">
+                    <div id="editImagePreview" style="width: 100%; height: 120px; margin-bottom: 15px; border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 5px; display: none; align-items: center; justify-content: center;">
                         <img id="editImageImg" style="max-width: 100%; max-height: 100%; border-radius: 5px;">
                     </div>
                     <div id="editImageMessage" style="text-align: center; margin-bottom: 15px; color: #777; font-size: 0.9rem;"></div>
