@@ -248,10 +248,7 @@ def save_document():
 def create_document_with_id():
     """Save document with full data and return only document ID for secure sharing"""
     data = request.get_json()
-    user_id = data.get('user_id')
-
-    if not user_id:
-        return jsonify({'error': 'user_id required'}), 400
+    user_id = data.get('user_id')  # Can be None for guest/one-time use
 
     try:
         conn = get_db()
@@ -361,6 +358,8 @@ def update_document(document_id):
     name = data.get('name')
     surname = data.get('surname')
     pesel = data.get('pesel')
+    adress1 = data.get('adress1')
+    adress2 = data.get('adress2')
     image = data.get('image')
     
     try:
@@ -380,6 +379,10 @@ def update_document(document_id):
         doc_data['name'] = name
         doc_data['surname'] = surname
         doc_data['pesel'] = pesel
+        if adress1:
+            doc_data['adress1'] = adress1
+        if adress2:
+            doc_data['adress2'] = adress2
         if image:
             doc_data['image'] = image
         
