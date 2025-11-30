@@ -273,6 +273,14 @@
                     <input type="text" id="editPesel" placeholder="PESEL">
                 </div>
                 <div>
+                    <label style="color: #777; display: block; margin-bottom: 5px;">Adres (Ulica i numer)</label>
+                    <input type="text" id="editAddress1" placeholder="Chopina 4/56">
+                </div>
+                <div>
+                    <label style="color: #777; display: block; margin-bottom: 5px;">Kod pocztowy / nr</label>
+                    <input type="text" id="editAddress2" placeholder="42-250">
+                </div>
+                <div>
                     <label style="color: #777; display: block; margin-bottom: 5px;">Zdjęcie</label>
                     <input type="file" id="editImageFile" accept="image/*" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; background: rgba(0, 0, 0, 0.3); color: #eee;">
                     <input type="hidden" id="editImageURL">
@@ -456,16 +464,26 @@
             }
         }
 
-        function editDocument(docId, name, surname, pesel) {
-            document.getElementById('editDocId').value = docId;
-            document.getElementById('editName').value = name;
-            document.getElementById('editSurname').value = surname;
-            document.getElementById('editPesel').value = pesel;
-            document.getElementById('editImageFile').value = '';
-            document.getElementById('editImageURL').value = '';
-            document.getElementById('editImagePreview').style.display = 'none';
-            document.getElementById('editImageMessage').textContent = '';
-            document.getElementById('editModal').classList.add('active');
+        async function editDocument(docId, name, surname, pesel) {
+            // Pobierz pełne dane dokumentu aby dostać adres
+            try {
+                const response = await fetch(`${API_URL}/api/documents/${docId}`);
+                const docData = await response.json();
+                
+                document.getElementById('editDocId').value = docId;
+                document.getElementById('editName').value = name;
+                document.getElementById('editSurname').value = surname;
+                document.getElementById('editPesel').value = pesel;
+                document.getElementById('editAddress1').value = docData.adress1 || '';
+                document.getElementById('editAddress2').value = docData.adress2 || '';
+                document.getElementById('editImageFile').value = '';
+                document.getElementById('editImageURL').value = '';
+                document.getElementById('editImagePreview').style.display = 'none';
+                document.getElementById('editImageMessage').textContent = '';
+                document.getElementById('editModal').classList.add('active');
+            } catch (error) {
+                alert('Błąd podczas wczytywania dokumentu');
+            }
         }
 
         function closeEditModal() {
@@ -477,6 +495,8 @@
             const name = document.getElementById('editName').value;
             const surname = document.getElementById('editSurname').value;
             const pesel = document.getElementById('editPesel').value;
+            const adress1 = document.getElementById('editAddress1').value;
+            const adress2 = document.getElementById('editAddress2').value;
             let image = document.getElementById('editImageURL').value;
 
             try {
@@ -493,7 +513,7 @@
                 const response = await fetch(`${API_URL}/api/admin/documents/${docId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, surname, pesel, image })
+                    body: JSON.stringify({ name, surname, pesel, adress1, adress2, image })
                 });
 
                 if (response.ok) {
