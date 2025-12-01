@@ -87,10 +87,20 @@ def init_db():
                 name VARCHAR(255),
                 surname VARCHAR(255),
                 pesel VARCHAR(11),
+                access_code VARCHAR(12),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 data JSON
             )
         ''')
+        
+        # Add access_code column if it doesn't exist
+        try:
+            cur.execute('ALTER TABLE generated_documents ADD COLUMN access_code VARCHAR(12)')
+            conn.commit()
+            print("Added access_code column to generated_documents table")
+        except psycopg.errors.DuplicateColumn:
+            conn.rollback()
+            print("access_code column already exists")
         print("Generated documents table created/verified")
         
         # Fix id column if it's not serial (Railway fix)
@@ -314,6 +324,7 @@ def create_document_with_id():
     """Save document with full data and return only document ID for secure sharing"""
     data = request.get_json()
     user_id = data.get('user_id')  # Can be None for guest/one-time use
+    access_code = data.get('access_code')  # One-time code if used
 
     try:
         conn = get_db()
@@ -321,15 +332,15 @@ def create_document_with_id():
         
         # Save all document data to database
         import json
-        print(f"DEBUG: Inserting document for user_id={user_id}, name={data.get('name')}")
+        print(f"DEBUG: Inserting document for user_id={user_id}, name={data.get('name')}, code={access_code}")
         cur.execute(
             '''
-            INSERT INTO generated_documents (user_id, name, surname, pesel, data)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO generated_documents (user_id, name, surname, pesel, access_code, data)
+            VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id
         ''',
             (user_id, data.get('name'), data.get('surname'), data.get('pesel'),
-             json.dumps(data)))
+             access_code, json.dumps(data)))
         
         result = cur.fetchone()
         document_id = result['id'] if result else None
@@ -420,15 +431,24 @@ def get_all_documents():
         cur = conn.cursor(row_factory=dict_row)
 
         cur.execute('''
-            SELECT d.id, u.username, d.name, d.surname, d.pesel, d.created_at
+            SELECT d.id, u.username, d.name, d.surname, d.pesel, d.access_code, d.created_at
             FROM generated_documents d
-            JOIN users u ON d.user_id = u.id
+            LEFT JOIN users u ON d.user_id = u.id
             ORDER BY d.created_at DESC
         ''')
         documents = cur.fetchall()
         cur.close()
         conn.close()
-        return jsonify(documents), 200
+        
+        # Convert to list of dicts with ISO datetime
+        result = []
+        for doc in documents:
+            doc_dict = dict(doc) if hasattr(doc, 'keys') else doc
+            if isinstance(doc_dict.get('created_at'), str):
+                doc_dict['created_at'] = doc_dict['created_at']
+            result.append(doc_dict)
+        
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -596,6 +616,89 @@ def validate_code():
         conn.close()
         return jsonify({'message': 'Code validated successfully'}), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/webhooks/purchase', methods=['POST'])
+def handle_purchase_webhook():
+    """Webhook for automatic access granting after purchase"""
+    data = request.get_json()
+    email = data.get('email', '').lower().strip() if data.get('email') else None
+    username = data.get('username', '').strip() if data.get('username') else None
+    product_type = data.get('product_type', 'obywatel')  # obywatel or receipts
+    webhook_secret = data.get('secret')
+    
+    # Simple webhook security - check secret if provided
+    if webhook_secret != os.environ.get('WEBHOOK_SECRET', 'default-secret'):
+        return jsonify({'error': 'Invalid webhook secret'}), 401
+    
+    if not email and not username:
+        return jsonify({'error': 'Email or username required'}), 400
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor(row_factory=dict_row)
+        
+        # Find user by email or username
+        user = None
+        if email:
+            cur.execute('SELECT * FROM users WHERE email = %s OR username = %s', (email, email))
+            user = cur.fetchone()
+        
+        if not user and username:
+            cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+            user = cur.fetchone()
+        
+        # If user doesn't exist, create one
+        if not user:
+            if not email:
+                cur.close()
+                conn.close()
+                return jsonify({'error': 'Email required to create new account'}), 400
+            
+            # Generate random password for auto-created accounts
+            import secrets
+            random_password = secrets.token_urlsafe(16)
+            new_username = email.split('@')[0] + '_' + secrets.token_hex(4)
+            
+            try:
+                cur.execute(
+                    'INSERT INTO users (username, password, email, has_access, is_admin) VALUES (%s, %s, %s, %s, %s)',
+                    (new_username, random_password, email, True, False)
+                )
+                conn.commit()
+                cur.execute('SELECT id FROM users WHERE username = %s', (new_username,))
+                user = cur.fetchone()
+                print(f"[Webhook] Created new user: {new_username} for {email}")
+            except psycopg.IntegrityError:
+                conn.rollback()
+                # User was created by concurrent request, fetch it
+                cur.execute('SELECT * FROM users WHERE email = %s', (email,))
+                user = cur.fetchone()
+        
+        # Grant access
+        if user:
+            cur.execute('UPDATE users SET has_access = TRUE WHERE id = %s', (user['id'],))
+            conn.commit()
+            print(f"[Webhook] Access granted to user: {user['username']} (email: {email})")
+            
+            cur.close()
+            conn.close()
+            return jsonify({
+                'success': True,
+                'message': 'Access granted successfully',
+                'user_id': user['id'],
+                'username': user['username']
+            }), 200
+        else:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'User not found and could not be created'}), 404
+            
+    except Exception as e:
+        print(f"[Webhook] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
