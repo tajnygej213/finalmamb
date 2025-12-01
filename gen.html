@@ -950,6 +950,9 @@
                 }
             }
             
+            // Usunięcie one-time access po wygenerowaniu dokumentu
+            localStorage.removeItem('one_time_access');
+            
             // Przekieruj z ID dokumentu zamiast wszystkich parametrów
             if (documentId) {
                 const targetUrl = `id.html?doc_id=${documentId}`;
