@@ -276,6 +276,7 @@
                         <th>Imię</th>
                         <th>Nazwisko</th>
                         <th>PESEL</th>
+                        <th>Kod dostępu</th>
                         <th>Data</th>
                         <th>Akcja</th>
                     </tr>
@@ -425,10 +426,11 @@
                 tbody.innerHTML = docs.map(d => `
                     <tr>
                         <td>${d.id}</td>
-                        <td>${d.username}</td>
+                        <td>${d.username || '-'}</td>
                         <td>${d.name}</td>
                         <td>${d.surname}</td>
                         <td>${d.pesel}</td>
+                        <td><code style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 3px; font-family: monospace;">${d.access_code || '-'}</code></td>
                         <td>${new Date(d.created_at).toLocaleDateString('pl-PL')}</td>
                         <td>
                             <button class="action" onclick="viewDocument(${d.id})">Wyświetl</button>
