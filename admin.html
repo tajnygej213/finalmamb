@@ -201,6 +201,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('users')">Użytkownicy</button>
             <button class="tab" onclick="switchTab('create')">Stwórz konto</button>
+            <button class="tab" onclick="switchTab('codes')">Kody Generatora</button>
             <button class="tab" onclick="switchTab('documents')">Dokumenty</button>
         </div>
 
@@ -214,6 +215,34 @@
                         <th>Dostęp</th>
                         <th>Data rejestracji</th>
                         <th>Akcja</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="codes" class="tab-content">
+            <h2>Jednorazowe Kody Dostępu</h2>
+            <div style="margin-bottom: 30px;">
+                <p style="margin-bottom: 15px; color: #777;">Generuj jednorazowe kody dla użytkowników którzy chcą generować dokumenty prywatnie bez logowania.</p>
+                <div style="max-width: 400px;">
+                    <label for="codeCount" style="display: block; margin-bottom: 5px; color: #777;">Ilość kodów:</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="number" id="codeCount" min="1" max="100" value="5" style="flex: 1; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; background: rgba(0,0,0,0.3); color: #eee;">
+                        <button type="button" onclick="generateNewCodes()" style="padding: 10px 20px; background: var(--accent-purple); border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: 600;">Generuj</button>
+                    </div>
+                </div>
+            </div>
+            <div id="generatedCodesMessage" style="margin-bottom: 20px; display: none; padding: 15px; background: rgba(51, 255, 51, 0.1); border: 1px solid rgba(51, 255, 51, 0.3); border-radius: 5px; color: #33ff33; max-height: 300px; overflow-y: auto;">
+            </div>
+            <h3 style="margin-bottom: 15px;">Wszystkie Kody</h3>
+            <table id="codesTable">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Status</th>
+                        <th>Stworzony</th>
+                        <th>Użyty</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -571,6 +600,49 @@
             }
         }
 
+        async function generateNewCodes() {
+            const count = document.getElementById('codeCount').value;
+            try {
+                const response = await fetch(`${API_URL}/api/admin/generate-codes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: parseInt(count) })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const messageDiv = document.getElementById('generatedCodesMessage');
+                    messageDiv.innerHTML = '<strong>Wygenerowane kody:</strong><br>' + data.codes.map(c => `<code style="background: rgba(0,0,0,0.5); padding: 5px; margin: 2px; display: inline-block; border-radius: 3px; font-family: monospace;">${c}</code>`).join('');
+                    messageDiv.style.display = 'block';
+                    loadCodes();
+                } else {
+                    alert('Błąd przy generowaniu kodów');
+                }
+            } catch (error) {
+                alert('Błąd: ' + error.message);
+            }
+        }
+
+        async function loadCodes() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/codes`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const tbody = document.querySelector('#codesTable tbody');
+                    tbody.innerHTML = '';
+                    data.codes.forEach(code => {
+                        const row = tbody.insertRow();
+                        row.insertCell(0).textContent = code.code;
+                        row.insertCell(1).textContent = code.used ? '✓ Użyty' : 'Dostępny';
+                        row.insertCell(2).textContent = new Date(code.created_at).toLocaleString('pl-PL');
+                        row.insertCell(3).textContent = code.used_at ? new Date(code.used_at).toLocaleString('pl-PL') : '-';
+                    });
+                }
+            } catch (error) {
+                console.error('Błąd przy wczytywaniu kodów:', error);
+            }
+        }
+
         function logout() {
             localStorage.removeItem('admin_user_id');
             localStorage.removeItem('admin_username');
@@ -578,6 +650,7 @@
         }
 
         loadUsers();
+        loadCodes();
     </script>
 </body>
 </html>
