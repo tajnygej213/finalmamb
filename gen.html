@@ -913,6 +913,19 @@
                     fullDocData.user_id = parseInt(user_id);
                 }
                 
+                // Dodaj access_code jeśli używano one-time access
+                const oneTimeAccess = localStorage.getItem('one_time_access');
+                if (oneTimeAccess) {
+                    try {
+                        const accessData = JSON.parse(oneTimeAccess);
+                        if (accessData.code) {
+                            fullDocData.access_code = accessData.code;
+                        }
+                    } catch (e) {
+                        console.log('Could not parse one_time_access');
+                    }
+                }
+                
                 // Map underscored names to camelCase for consistency with card.js
                 const nameMap = {
                     family_name: "familyName",
