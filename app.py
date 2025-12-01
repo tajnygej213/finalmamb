@@ -321,6 +321,7 @@ def create_document_with_id():
         
         # Save all document data to database
         import json
+        print(f"DEBUG: Inserting document for user_id={user_id}, name={data.get('name')}")
         cur.execute(
             '''
             INSERT INTO generated_documents (user_id, name, surname, pesel, data)
@@ -332,12 +333,27 @@ def create_document_with_id():
         
         result = cur.fetchone()
         document_id = result['id'] if result else None
+        print(f"DEBUG: Insert result: {result}, document_id={document_id}")
+        
+        # Fallback if RETURNING doesn't work on Railway
+        if not document_id:
+            pesel = data.get('pesel')
+            print("DEBUG: RETURNING didn't return ID, fetching latest...")
+            cur.execute('SELECT id FROM generated_documents WHERE pesel = %s ORDER BY id DESC LIMIT 1', (pesel,))
+            result = cur.fetchone()
+            document_id = result['id'] if result else None
+            print(f"DEBUG: Fallback result: {result}, document_id={document_id}")
+        
         conn.commit()
         cur.close()
         conn.close()
         
+        print(f"DEBUG: Returning document_id={document_id}")
         return jsonify({'document_id': document_id}), 201
     except Exception as e:
+        print(f"ERROR in create_document_with_id: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/documents/<int:document_id>', methods=['GET'])
