@@ -75,6 +75,7 @@ def init_db():
             conn.commit()
             print("HWID column added to users table")
         except psycopg.errors.DuplicateColumn:
+            conn.rollback()
             print("HWID column already exists")
 
         # Generated documents table
@@ -91,6 +92,19 @@ def init_db():
             )
         ''')
         print("Generated documents table created/verified")
+
+        # One-time codes table
+        print("Creating one_time_codes table...")
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS one_time_codes (
+                id SERIAL PRIMARY KEY,
+                code VARCHAR(12) UNIQUE NOT NULL,
+                used BOOLEAN DEFAULT FALSE,
+                used_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        print("One-time codes table created/verified")
 
         # Seed admin user if not exists
         print("Checking for admin user...")
@@ -437,6 +451,110 @@ def delete_document(document_id):
         cur.close()
         conn.close()
         return jsonify({'message': 'Document deleted successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# One-time code generation
+import random
+import string
+
+@app.route('/api/admin/generate-codes', methods=['POST'])
+def generate_codes():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid request body'}), 400
+        count = data.get('count', 1)
+        
+        try:
+            count = int(count)
+            if count < 1 or count > 100:
+                return jsonify({'error': 'Count must be between 1 and 100'}), 400
+        except:
+            return jsonify({'error': 'Invalid count'}), 400
+        
+        conn = get_db()
+        cur = conn.cursor(row_factory=dict_row)
+        
+        codes = []
+        for i in range(count):
+            attempts = 0
+            while attempts < 100:
+                code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
+                cur.execute('SELECT id FROM one_time_codes WHERE code = %s', (code,))
+                if not cur.fetchone():
+                    break
+                attempts += 1
+            
+            cur.execute('INSERT INTO one_time_codes (code) VALUES (%s)', (code,))
+            codes.append(code)
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'codes': codes}), 201
+    except Exception as e:
+        print(f"Error generating codes: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/admin/codes', methods=['GET'])
+def get_codes():
+    try:
+        conn = get_db()
+        cur = conn.cursor(row_factory=dict_row)
+        cur.execute('SELECT id, code, used, used_at, created_at FROM one_time_codes ORDER BY created_at DESC')
+        codes = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Convert datetime objects to strings
+        codes_list = []
+        for code in codes:
+            codes_list.append({
+                'id': code['id'],
+                'code': code['code'],
+                'used': code['used'],
+                'used_at': code['used_at'].isoformat() if code['used_at'] else None,
+                'created_at': code['created_at'].isoformat() if code['created_at'] else None
+            })
+        
+        return jsonify({'codes': codes_list}), 200
+    except Exception as e:
+        print(f"Error getting codes: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/auth/validate-code', methods=['POST'])
+def validate_code():
+    data = request.get_json()
+    code = data.get('code', '').strip().upper()
+    
+    if not code:
+        return jsonify({'error': 'Code is required'}), 400
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor(row_factory=dict_row)
+        cur.execute('SELECT id FROM one_time_codes WHERE code = %s AND used = FALSE', (code,))
+        code_record = cur.fetchone()
+        
+        if not code_record:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Code is invalid or already used'}), 401
+        
+        # Mark code as used
+        cur.execute('UPDATE one_time_codes SET used = TRUE, used_at = CURRENT_TIMESTAMP WHERE id = %s', (code_record['id'],))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'message': 'Code validated successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
