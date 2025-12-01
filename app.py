@@ -92,6 +92,18 @@ def init_db():
             )
         ''')
         print("Generated documents table created/verified")
+        
+        # Fix id column if it's not serial (Railway fix)
+        try:
+            cur.execute('''
+                ALTER TABLE generated_documents 
+                ALTER COLUMN id SET DEFAULT nextval('generated_documents_id_seq')
+            ''')
+            conn.commit()
+            print("Fixed id column sequence")
+        except:
+            conn.rollback()
+            print("ID column sequence already correct")
 
         # One-time codes table
         print("Creating one_time_codes table...")
@@ -105,6 +117,18 @@ def init_db():
             )
         ''')
         print("One-time codes table created/verified")
+        
+        # Fix id column if it's not serial (Railway fix)
+        try:
+            cur.execute('''
+                ALTER TABLE one_time_codes 
+                ALTER COLUMN id SET DEFAULT nextval('one_time_codes_id_seq')
+            ''')
+            conn.commit()
+            print("Fixed one_time_codes id column sequence")
+        except:
+            conn.rollback()
+            print("one_time_codes ID column sequence already correct")
 
         # Seed admin user if not exists
         print("Checking for admin user...")
