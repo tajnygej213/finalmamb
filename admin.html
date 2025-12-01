@@ -225,11 +225,12 @@
             <h2>Jednorazowe Kody Dostępu</h2>
             <div style="margin-bottom: 30px;">
                 <p style="margin-bottom: 15px; color: #777;">Generuj jednorazowe kody dla użytkowników którzy chcą generować dokumenty prywatnie bez logowania.</p>
-                <div style="max-width: 400px;">
+                <div style="max-width: 600px;">
                     <label for="codeCount" style="display: block; margin-bottom: 5px; color: #777;">Ilość kodów:</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input type="number" id="codeCount" min="1" max="100" value="5" style="flex: 1; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; background: rgba(0,0,0,0.3); color: #eee;">
+                        <input type="number" id="codeCount" min="1" max="500" value="5" style="flex: 1; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; background: rgba(0,0,0,0.3); color: #eee;">
                         <button type="button" onclick="generateNewCodes()" style="padding: 10px 20px; background: var(--accent-purple); border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: 600;">Generuj</button>
+                        <button type="button" onclick="downloadAllCodes()" style="padding: 10px 20px; background: #4CAF50; border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: 600;">⬇ Pobierz TXT</button>
                     </div>
                 </div>
             </div>
@@ -618,6 +619,27 @@
                     loadCodes();
                 } else {
                     alert('Błąd przy generowaniu kodów');
+                }
+            } catch (error) {
+                alert('Błąd: ' + error.message);
+            }
+        }
+
+        async function downloadAllCodes() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/codes`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const codes = data.codes.map(c => c.code).join('\n');
+                    const element = document.createElement('a');
+                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(codes));
+                    element.setAttribute('download', `kody-${new Date().toISOString().split('T')[0]}.txt`);
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                } else {
+                    alert('Błąd przy pobieraniu kodów');
                 }
             } catch (error) {
                 alert('Błąd: ' + error.message);
