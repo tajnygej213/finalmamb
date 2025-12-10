@@ -67,16 +67,8 @@ def init_db():
                 hwid VARCHAR(255)
             )
         ''')
+        conn.commit()
         print("Users table created/verified")
-        
-        # Add hwid column if it doesn't exist
-        try:
-            cur.execute('ALTER TABLE users ADD COLUMN hwid VARCHAR(255)')
-            conn.commit()
-            print("HWID column added to users table")
-        except psycopg.errors.DuplicateColumn:
-            conn.rollback()
-            print("HWID column already exists")
 
         # Generated documents table
         print("Creating generated_documents table...")
@@ -92,28 +84,8 @@ def init_db():
                 data JSON
             )
         ''')
-        
-        # Add access_code column if it doesn't exist
-        try:
-            cur.execute('ALTER TABLE generated_documents ADD COLUMN access_code VARCHAR(12)')
-            conn.commit()
-            print("Added access_code column to generated_documents table")
-        except psycopg.errors.DuplicateColumn:
-            conn.rollback()
-            print("access_code column already exists")
+        conn.commit()
         print("Generated documents table created/verified")
-        
-        # Fix id column if it's not serial (Railway fix)
-        try:
-            cur.execute('''
-                ALTER TABLE generated_documents 
-                ALTER COLUMN id SET DEFAULT nextval('generated_documents_id_seq')
-            ''')
-            conn.commit()
-            print("Fixed id column sequence")
-        except:
-            conn.rollback()
-            print("ID column sequence already correct")
 
         # One-time codes table
         print("Creating one_time_codes table...")
@@ -126,19 +98,8 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        conn.commit()
         print("One-time codes table created/verified")
-        
-        # Fix id column if it's not serial (Railway fix)
-        try:
-            cur.execute('''
-                ALTER TABLE one_time_codes 
-                ALTER COLUMN id SET DEFAULT nextval('one_time_codes_id_seq')
-            ''')
-            conn.commit()
-            print("Fixed one_time_codes id column sequence")
-        except:
-            conn.rollback()
-            print("one_time_codes ID column sequence already correct")
 
         # Seed admin user if not exists
         print("Checking for admin user...")
@@ -588,6 +549,42 @@ def get_codes():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/clear-codes')
+def clear_codes_page():
+    """Page to clear all one-time codes from database"""
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('DELETE FROM one_time_codes')
+        deleted_count = cur.rowcount
+        conn.commit()
+        cur.close()
+        conn.close()
+        return f'''
+        <!DOCTYPE html>
+        <html>
+        <head><title>Codes Cleared</title></head>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h1>Kody wyczyszczone!</h1>
+            <p>Usunieto {deleted_count} kodow z bazy danych.</p>
+            <a href="/admin.html">Powrot do panelu admina</a>
+        </body>
+        </html>
+        ''', 200
+    except Exception as e:
+        return f'''
+        <!DOCTYPE html>
+        <html>
+        <head><title>Error</title></head>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h1>Blad!</h1>
+            <p>{str(e)}</p>
+            <a href="/admin.html">Powrot do panelu admina</a>
+        </body>
+        </html>
+        ''', 500
 
 
 @app.route('/api/auth/validate-code', methods=['POST'])
